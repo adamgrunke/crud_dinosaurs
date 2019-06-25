@@ -1,0 +1,13 @@
+<h2>Update yer Dino Info</h2>
+<a href="/dinosaurs"> BACK TO DINOS</a>
+
+
+<form method="POST" action="/dinosaurs/<%= id %>/?_method=PUT" >
+    <label for="dinosaurType">Type</label>
+    <input type="text" name="dinosaurType" value="<%= dinoData.type%>"/>
+
+    <label for="dinosaurName"> Name </label>
+    <input type="text" name="dinosaurName" value="<%= dinoData.name%>" /> 
+
+    <input type="submit" value="UPDATE MY DINO">
+</form>
