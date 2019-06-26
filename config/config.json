@@ -1,0 +1,17 @@
+{
+  "development": {
+    "database": "dinosaur",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+    },
+  "test": {
+    "database": "dinosaur",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+    },
+  "production": {
+    "database": "dinosaur",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+    }
+}
