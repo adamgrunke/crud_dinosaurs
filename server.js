@@ -1,9 +1,12 @@
 const express = require('express');
-const app = express();
 const layouts = require('express-ejs-layouts');
-const fs = require('fs');
+var db = require('./models');
+//TODO remove fs and use sequelize instead
+// const fs = require('fs');
 const methodOverride = require('method-override');
-const port = 8000;
+const port = process.env.PORT || 3000;
+
+const app = express();
 
 app.set('view engine', 'ejs');
 app.use(layouts);
@@ -19,10 +22,9 @@ app.get('/', function(req, res) {
 
 // GET /dinosaurs - index route - gets ALL dinos
 app.get('/dinosaurs', function(req, res){
-    let dinosaurs = fs.readFileSync('./dinosaurs.json');
-    let dinoData = JSON.parse(dinosaurs);
-    console.log(dinoData);
-    res.render('dinos/index.ejs',{dinosaurs: dinoData})
+    db.dinosaur.findAll().then(function(dinosaurs){
+        res.render('dinos/index',{dinosaurs});
+    })
 });
 
 
@@ -33,37 +35,35 @@ app.get('/dinosaurs/new', function(req, res){
 
 // GET /dinosaurs/edit - serve up our EDIT dino form
 app.get('/dinosaurs/:id/edit', function(req, res){
-    let dinosaurs = fs.readFileSync('./dinosaurs.json');
-    let dinoData = JSON.parse(dinosaurs);
-    let id = parseInt(req.params.id);
-    res.render('dinos/edit',{dinoData: dinoData[id], id});
+    var id = req.params.id;
+    db.dinosaur.findByPk(id)
+        .then(function(dinosaur){
+            res.render('dinos/edit', {dinosaur})
+        })
 });
 
 // GET /dinosaurs/:id - show route - gets ONE dino
 app.get('/dinosaurs/:id', function(req, res){ 
-    let dinosaurs = fs.readFileSync('./dinosaurs.json');
-    let dinoData = JSON.parse(dinosaurs);
-
-    let id = parseInt(req.params.id);
-    res.render('dinos/show', {dinosaur: dinoData[id], id});
+    var id = req.params.id;
+    db.dinosaur.findByPk(id)
+        .then(function(dinosaur){
+            res.render('dinos/show', {dinosaur})
+        })
+   
+    // res.render('dinos/show', {dinosaur: dinoData[id], id});
 });
 
 // POST /dinosaurs
 app.post('/dinosaurs', function(req, res){
-    // read in our JSON file
-    let dinosaurs = fs.readFileSync('./dinosaurs.json');
-    // convert it to an array
-    let dinoData = JSON.parse(dinosaurs);
-    // push our new data into the array
-    let newDino = {
+    
+    db.dinosaur.create({
         type: req.body.dinosaurType,
         name: req.body.dinosaurName
-    };
-    dinoData.push(newDino);
-    // write the array back to the file
-    fs.writeFileSync('./dinosaurs.json', JSON.stringify(dinoData));    
-    
-    res.redirect('/dinosaurs');
+
+    }).then(function(dinosaur){
+
+        res.redirect('/dinosaurs');
+    })
 });
 
 
@@ -85,16 +85,18 @@ app.delete('/dinosaurs/:id', function(req, res) {
 });
 
 app.put('/dinosaurs/:id', function(req, res){
-    let dinosaurs = fs.readFileSync('./dinosaurs.json');
-    let dinoData = JSON.parse(dinosaurs);
     var id = parseInt(req.params.id);
 
-    dinoData[id].name = req.body.dinosaurName;
-    dinoData[id].type = req.body.dinosaurType;
+    db.dinosaur.update({
+        type: req.body.dinosaurType,
+        name: req.body.dinosaurName
+    },
+    {
+        where: {id: id}
+    }).then(function(dinosaur){
 
-    fs.writeFileSync('./dinosaurs.json', JSON.stringify(dinoData));
-    res.redirect('/dinosaurs/' + id);
-    
+        res.redirect('/dinosaurs');
+    })
 })
 
 
